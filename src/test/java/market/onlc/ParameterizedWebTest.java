@@ -6,10 +6,12 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.CsvSource;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 
 import java.util.stream.Stream;
 
+import static com.codeborne.selenide.Condition.text;
 import static com.codeborne.selenide.Selenide.$;
 import static com.codeborne.selenide.Selenide.open;
 import static io.qameta.allure.Allure.step;
@@ -53,7 +55,7 @@ public class ParameterizedWebTest {
     }
 
     @DisplayName("Поиск по наименованию оферты")
-    @CsvSource(value = {"кепка, Найдено: 28"})
+    @CsvSource(value = {"кепка, Найдено: 30"})
     @ParameterizedTest(name = "Тестирование общего алгоритма поиска")
     void csvTest(String testData, String expected) {
         step("", () -> {
@@ -64,8 +66,25 @@ public class ParameterizedWebTest {
                     .shouldHave(Condition.text(expected));
         });
     }
+    static Stream<Arguments> commonSearchDataProvider(){
+        return Stream.of(
+                Arguments.of("22222", "Найдено: 0"),
+                Arguments.of("страховка", "Найдено: ")
+        );
+    }
+    @MethodSource("commonSearchDataProvider")
+    @ParameterizedTest(name = "Тестирование с тестданными: {0}")
+    void searchWithMethodSourceTest(String testData, String expectedResult) {
+        open("https://dev1.onlc.market/home/offer/list/");
+        $("#HomeOffersForm_query").setValue(testData).pressEnter();
 
+        $(".sub-top___StyledCol-sc-es4zgy-1")
+                .shouldHave(Condition.text(expectedResult));
+    }
 }
+
+
+
 
 
 
